@@ -20,6 +20,12 @@ try{
     );
 
     $errors = [];
+
+    //requete qui doit retourner des resultats
+    $stmt = $dbh->query("select * from users");
+    // recupere les users et fout le resultat dans une variable sous forme de tableau de tableaux
+    $users = $stmt->fetchAll();
+
     /*
      *  check/validation du formulaire
     */
@@ -29,6 +35,11 @@ try{
             // si name > 50 chars
         } else if (strlen($_POST['userLogin']) > 50) {
             $errors[] = 'champ user_id trop long (50max)';
+        }
+        foreach ($users as $user) {
+            if ($_POST['userLogin'] == $user['login']) {
+                $errors[] = 'login déjà existant';
+            }
         }
     }
     if (isset($_POST['userFirstname'])){
@@ -51,12 +62,13 @@ try{
         if (empty($_POST['userPassword'])) {
             $errors[] = 'champ user_id vide';
             // si name > 50 chars
-        } else if (strlen($_POST['userPassword']) > 50) {
-            $errors[] = 'champ user_id trop long (50max)';
+        } else if (strlen($_POST['userPassword']) < 8) {
+            $errors[] = 'champ user_id trop court (8min)';
+        } else if (strlen($_POST['userPassword']) > 20) {
+            $errors[] = 'champ user_id trop long (20max)';
         }
         $password = $_POST['userPassword'];
         $password = password_hash($password, PASSWORD_DEFAULT);
-        var_dump($password);
     }
 
     // tableau d'erreurs initial, vide
@@ -82,10 +94,6 @@ try{
             // success
         }
     }
-    //requete qui doit retourner des resultats
-    $stmt = $dbh->query("select * from users");
-    // recupere les users et fout le resultat dans une variable sous forme de tableau de tableaux
-    $users = $stmt->fetchAll();
 }catch (Exception $e){
     echo('cacaboudin exception');
     print_r($e);
