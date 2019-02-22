@@ -36,13 +36,13 @@ $errors = isset($_SESSION['errors']) ? $_SESSION['errors'] : [];
             <fieldset>
                 <legend>user</legend>
                 <label for="userLogin">Login</label>
-                <input type="text" id="userLogin" name="userLogin"/>
+                <input type="text" id="userLogin" name="login"/>
                 <label for="userPassword">Password</label>
-                <input type="text" id="userPassword" name="userPassword"/>
+                <input type="text" id="userPassword" name="password"/>
                 <label for="userFirstname">Firstname</label>
-                <input type="text" id="userFirstname" name="userFirstname"/>
+                <input type="text" id="userFirstname" name="firstname"/>
                 <label for="userLastname">Lastname</label>
-                <input type="text" id="userLastname" name="userLastname"/>
+                <input type="text" id="userLastname" name="lastname"/>
             </fieldset>
             <input type="submit" value="Envoyer" class="button-primary">
         </form>

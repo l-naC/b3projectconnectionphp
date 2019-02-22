@@ -1,7 +1,8 @@
 <?php
 require_once('../classes/connection_class.php');
 
-Class User{
+Class User
+{
 
     public $id;
     public $login;
@@ -11,14 +12,16 @@ Class User{
 
     public $errors = [];
 
-    public function __construct($id = null){
-        if (!is_null($id)){
+    public function __construct($id = null)
+    {
+        if (!is_null($id)) {
             $this->get($id);
         }
     }
 
-    public function get($id = null){
-        if (!is_null($id)){
+    public function get($id = null)
+    {
+        if (!is_null($id)) {
             $dbh = Connection::get();
             //print_r($dbh);
 
@@ -29,6 +32,7 @@ Class User{
             // recupere les users et fout le resultat dans une variable sous forme de tableau de tableaux
             $stmt->setFetchMode(PDO::FETCH_CLASS, 'User');
             $user = $stmt->fetch();
+
             $this->id = $user->id;
             $this->login = $user->login;
             $this->password = $user->password;
@@ -38,36 +42,27 @@ Class User{
         }
     }
 
-    public function validate($data){
+    public function validate($data)
+    {
         $this->errors = [];
 
         /* required fields */
-        if (! isset($data['login'])) {
+        if (!isset($data['login'])) {
             $this->errors[] = 'champ login vide';
         }
-        if (! isset($data['password'])) {
+        if (!isset($data['password'])) {
             $this->errors[] = 'champ password vide';
         }
-
+        /* tests de formats */
         if (isset($data['login'])) {
             if (empty($data['login'])) {
                 $this->errors[] = 'champ login vide';
                 // si name > 50 chars
             } else if (mb_strlen($data['login']) > 45) {
                 $this->errors[] = 'champ login trop long (45max)';
-            }else{
-                $dbh = Connection::get();
-                $sql = "select count(id) from users where login = :login";
-                $sth = $dbh->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
-                $sth->execute(array(
-                    ':login' => $data['login']
-                ));
-                if($sth->fetchColumn() > 0){
-                    $this->errors[] = 'login deja pris blaireau';
-                }
             }
-
         }
+
         if (isset($data['password'])) {
             if (empty($data['password'])) {
                 $this->errors[] = 'champ password vide';
@@ -100,13 +95,33 @@ Class User{
             }
         }
 
-        if (count ($this->errors) > 0){
+        if (count($this->errors) > 0) {
             return false;
         }
         return true;
     }
 
-    public function findAll(){
+    private function loginExists($login = null)
+    {
+        if (!is_null($login)) {
+
+            $dbh = Connection::get();
+            $sql = "select count(id) from users where login = :login";
+            $sth = $dbh->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+            $sth->execute(array(
+                ':login' => $login
+            ));
+            if ($sth->fetchColumn() > 0) {
+                $this->errors[] = 'login deja pris blaireau';
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public function findAll()
+    {
         $dbh = Connection::get();
         $stmt = $dbh->query("select * from users");
         // recupere les users et fout le resultat dans une variable sous forme de tableau de tableaux
@@ -114,8 +129,14 @@ Class User{
         return $users;
     }
 
-    public function save($data){
-        if ($this->validate($data)){
+    public function save($data)
+    {
+        if ($this->validate($data)) {
+            if(isset($data['id']) && !empty($data['id'])){
+                // update
+            }elseif ($this->loginExists($data['login'])){
+                return false;
+            }
             $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
             /* syntaxe avec preparedStatements */
             $dbh = Connection::get();
@@ -128,7 +149,7 @@ Class User{
                 ':lastname' => $data['lastname']
             ))) {
                 return true;
-            }else{
+            } else {
                 // ERROR
                 // put errors in $session
                 $this->errors['pas reussi a creer le user'];
@@ -137,8 +158,9 @@ Class User{
         return false;
     }
 
-    public function login($data){
-        if ($this->validate($data)){
+    public function login($data)
+    {
+        if ($this->validate($data)) {
             $dbh = Connection::get();
             $sql = "select password from users where login = :login limit 1";
             $sth = $dbh->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
@@ -146,10 +168,10 @@ Class User{
                 ':login' => $data['login']
             ));
             $storedPassword = $sth->fetchColumn();
-            if(password_verify($data['password'], $storedPassword)){
+            if (password_verify($data['password'], $storedPassword)) {
                 return true;
 
-            }else{
+            } else {
                 // ERROR
                 $this->errors[] = 'CASSE TOI !';
             }

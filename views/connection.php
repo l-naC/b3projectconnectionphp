@@ -25,13 +25,22 @@ $errors = isset($_SESSION['errors']) ? $_SESSION['errors'] : [];
 <div class="container">
     <div class="row">
         <h1>formulaire connection user</h1>
+
+        <ul class="errors">
+            <?php
+            foreach ($errors as $error) {
+                echo("<li>" . $error . "</li>");
+            }
+            ?>
+        </ul>
+
         <form method="post" action="../controllers/users_controller.php?action=login" id="connectForm">
             <fieldset>
                 <legend>Connection</legend>
                 <label for="userLogin">Login</label>
-                <input type="text" id="userLogin" name="userLogin"/>
+                <input type="text" id="userLogin" name="login"/>
                 <label for="userPassword">Password</label>
-                <input type="text" id="userPassword" name="userPassword"/>
+                <input type="password" id="userPassword" name="password"/>
             </fieldset>
             <input type="submit" value="Envoyer" class="button-primary">
         </form>
